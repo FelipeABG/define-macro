@@ -1,8 +1,8 @@
+use parsed::Grammar;
 use proc_macro::TokenStream;
 use quote::quote;
-use representation::Grammar;
 
-mod representation;
+mod parsed;
 
 #[proc_macro]
 pub fn bnf(input: TokenStream) -> TokenStream {

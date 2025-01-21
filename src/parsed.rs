@@ -11,13 +11,13 @@ pub struct Grammar {
 
 pub struct Rule {
     pub name: syn::Ident,
-    pub arrow: Token![->],
+    pub _arrow: Token![->],
     pub fields: Vec<Field>,
 }
 
 pub struct Field {
     pub name: syn::Ident,
-    pub paren: Option<syn::token::Paren>,
+    pub _paren: Option<syn::token::Paren>,
     pub ty: Option<syn::Type>,
     pub separator: Separator,
 }
@@ -47,7 +47,7 @@ impl Parse for Rule {
 
         Ok(Self {
             name,
-            arrow,
+            _arrow: arrow,
             fields,
         })
     }
@@ -60,7 +60,7 @@ impl Parse for Field {
         let separator = input.parse()?;
         Ok(Self {
             name,
-            paren,
+            _paren: paren,
             ty,
             separator,
         })
