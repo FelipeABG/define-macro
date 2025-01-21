@@ -1,4 +1,5 @@
 use proc_macro2::TokenStream as TokenStream2;
+use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -35,6 +36,18 @@ impl Parse for Grammar {
     }
 }
 
+impl ToTokens for Grammar {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let rules: Vec<&Rule> = self.rules.iter().collect();
+
+        let ts = quote! {
+            #(#rules)*
+        };
+
+        tokens.extend(ts);
+    }
+}
+
 impl Parse for Rule {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let name = input.parse()?;
@@ -53,6 +66,35 @@ impl Parse for Rule {
     }
 }
 
+impl ToTokens for Rule {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let name = syn::Ident::new(
+            &format!("{}", capitalize(&self.name.to_string())),
+            self.name.span(),
+        );
+        let fields = &self.fields;
+
+        let ts = match &self.fields[0].separator {
+            Separator::Comma => {
+                quote! {
+                    struct #name {
+                        #(#fields)*
+                    }
+                }
+            }
+            Separator::Pipe => {
+                quote! {
+                    enum #name {
+                        #(#fields)*
+                    }
+                }
+            }
+        };
+
+        tokens.extend(ts);
+    }
+}
+
 impl Parse for Field {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let name = input.parse()?;
@@ -64,6 +106,41 @@ impl Parse for Field {
             ty,
             separator,
         })
+    }
+}
+
+impl ToTokens for Field {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let ts = match self.separator {
+            Separator::Comma => {
+                let name = &self.name;
+                let ty = &self.ty.clone().unwrap();
+                quote! {#name: #ty,}
+            }
+            Separator::Pipe => {
+                let name = &syn::Ident::new(
+                    &format!("{}", capitalize(&self.name.to_string())),
+                    self.name.span(),
+                );
+
+                match &self.ty {
+                    Some(ty) => {
+                        quote! {#name(#ty),}
+                    }
+                    None => quote! {#name,},
+                }
+            }
+        };
+
+        tokens.extend(ts);
+    }
+}
+
+fn capitalize(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
     }
 }
 
@@ -87,7 +164,7 @@ impl Parse for Separator {
             input.parse::<Token![|]>()?;
             Ok(Separator::Pipe)
         } else {
-            Err(input.error("Expected '|' for enums or ',' for structs"))
+            Err(input.error("Expected '|' or ','"))
         }
     }
 }
