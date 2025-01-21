@@ -1,49 +1,41 @@
-use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::{
-    parenthesized,
     parse::{Parse, ParseStream},
-    parse_macro_input,
     punctuated::Punctuated,
     Token,
 };
 
-pub struct Bnf {
-    definitions: Punctuated<Definition, Token![;]>,
+pub struct Grammar {
+    pub rules: Punctuated<Rule, Token![;]>,
 }
 
-pub struct Definition {
-    name: syn::Ident,
-    arrow: Token![->],
-    fields: Vec<Field>,
+pub struct Rule {
+    pub name: syn::Ident,
+    pub arrow: Token![->],
+    pub fields: Vec<Field>,
 }
 
 pub struct Field {
-    name: syn::Ident,
-    colon: Option<Token![:]>,
-    ty: Option<syn::Type>,
-    value_variant: Option<ValueVariant>,
-    separator: Separator,
+    pub name: syn::Ident,
+    pub paren: Option<syn::token::Paren>,
+    pub ty: Option<syn::Type>,
+    pub separator: Separator,
 }
 
-pub struct ValueVariant {
-    paren: syn::token::Paren,
-    ty: syn::Type,
-}
-
+#[derive(PartialEq, Eq)]
 pub enum Separator {
     Comma,
     Pipe,
 }
 
-impl Parse for Bnf {
+impl Parse for Grammar {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let definitions = Punctuated::parse_terminated(input)?;
-        Ok(Self { definitions })
+        let rules = Punctuated::parse_terminated(input)?;
+        Ok(Self { rules })
     }
 }
 
-impl Parse for Definition {
+impl Parse for Rule {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let name = input.parse()?;
         let arrow = input.parse()?;
@@ -64,43 +56,25 @@ impl Parse for Definition {
 impl Parse for Field {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let name = input.parse()?;
-        let (colon, ty) = parse_type_annotation(input)?;
-        let value_variant = parse_value_variant(input)?;
+        let (paren, ty) = parse_type(input)?;
         let separator = input.parse()?;
         Ok(Self {
             name,
-            colon,
+            paren,
             ty,
             separator,
-            value_variant,
         })
     }
 }
 
-fn parse_type_annotation(
-    input: ParseStream,
-) -> syn::Result<(Option<Token![:]>, Option<syn::Type>)> {
-    if input.peek(Token![:]) {
-        Ok((Some(input.parse()?), Some(input.parse()?)))
+fn parse_type(input: ParseStream) -> syn::Result<(Option<syn::token::Paren>, Option<syn::Type>)> {
+    if input.peek(syn::token::Paren) {
+        let content;
+        let paren = syn::parenthesized!(content in input);
+        let ty = content.parse()?;
+        Ok((Some(paren), Some(ty)))
     } else {
         Ok((None, None))
-    }
-}
-
-fn parse_value_variant(input: ParseStream) -> syn::Result<Option<ValueVariant>> {
-    if input.peek(syn::token::Paren) {
-        Ok(Some(input.parse()?))
-    } else {
-        Ok(None)
-    }
-}
-
-impl Parse for ValueVariant {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
-        let paren = parenthesized!(content in input);
-        let ty = content.parse()?;
-        Ok(Self { paren, ty })
     }
 }
 
