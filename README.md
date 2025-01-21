@@ -10,7 +10,7 @@ A Rust procedural macro for defining grammar structures with a concise, declarat
 - Support for field types in parentheses
 - Flexible separator syntax (comma or pipe)
 
-## Example 
+## Showcase 
 
 ```rust 
 define!(
@@ -45,7 +45,7 @@ define! {
 #### Defining a Struct
 
 ```rust
-grammar! {
+define! {
     struct Point -> x(f64), y(f64);
 }
 ```
@@ -68,7 +68,7 @@ impl Point {
 #### Defining an Enum
 
 ```rust
-grammar! {
+define! {
     enum Expression -> Number(i32) | Variable(String) | Plus | Minus;
 }
 ```
@@ -109,13 +109,6 @@ For structs, the macro automatically generates a `new` method that takes all fie
 - Struct names are kept as provided
 - Enum variant names are automatically capitalized
 - Field names in structs remain lowercase
-
-## Limitations
-
-1. Generic type parameters are not currently supported
-2. Attributes cannot be applied to generated items
-3. Custom visibility modifiers are not supported (all items are public)
-4. Nested types must be fully qualified
 
 ## Error Handling
 
