@@ -61,7 +61,7 @@ impl ToTokens for Rule {
             let names: Vec<_> = self.fields.iter().map(|f| &f.name).collect();
             tokens.extend(quote! {
                 impl #name {
-                    fn new(#(#args),*) -> Self {
+                    pub fn new(#(#args),*) -> Self {
                         Self {#(#names),*}
                     }
                 }
