@@ -41,7 +41,7 @@ impl ToTokens for Rule {
         );
         let fields = format_fields(self);
         let ts = quote! {
-            #[derive(Clone)]
+            #[derive(Clone, Debug)]
             pub #kw #name {
                 #(#fields)*
             }
