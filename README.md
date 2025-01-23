@@ -2,7 +2,6 @@
 
 <p align="center">A Rust procedural macro for defining grammar structures with a concise, declarative syntax based in the Backus-Naur Form (BNF). This macro allows you to define enums and structs using a custom grammar-like syntax that gets expanded into proper Rust code.</p>
 
-
 ## Features
 
 - Define structs and enums using a simplified grammar syntax
@@ -11,9 +10,9 @@
 - Support for field types in parentheses
 - Flexible separator syntax (comma or pipe)
 
-## Showcase 
+## Showcase
 
-```rust 
+```rust
 define!(
     enum expr -> unary(Unary)
                 |binary(Binary)
@@ -111,14 +110,15 @@ For structs, the macro automatically generates a `new` method that takes all fie
 - Enum variant names are automatically capitalized
 - Field names in structs remain lowercase
 
+### Derives
+
+- All types derive `Clone` and `Debug` by default.
+
 ## Error Handling
 
 The macro will fail to compile with helpful error messages if:
+
 - The grammar syntax is invalid
 - Type declarations are malformed
 - Required separators are missing
 - Keywords are misused
-
-
-
-
