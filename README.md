@@ -1,4 +1,4 @@
-<h1 align="center">Definition Macro</h1>
+<h1 align="center">Grammar Macro</h1>
 
 <p align="center">A Rust procedural macro for defining grammar structures with a concise, declarative syntax based in the Backus-Naur Form (BNF). This macro allows you to define enums and structs using a custom grammar-like syntax that gets expanded into proper Rust code.</p>
 
